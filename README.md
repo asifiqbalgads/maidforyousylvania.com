@@ -119,12 +119,31 @@ Everything is relative-path based, so it also works from a project subdirectory
 4. The page appears at `https://<user>.github.io/<repo>/` within a minute or two.
 5. Remove the `noindex` meta tag in `index.html` only if this page becomes the public site.
 
-## 9. Verified vs. not verified
+## 9. Mobile behaviour notes
+
+- **Sticky header:** `body` no longer uses `overflow-x: hidden` (that turns `body` into a
+  scroll container and kills `position: sticky`). Root/body use `overflow-x: clip` instead,
+  so the header sticks from the very top of the page — including inside the preview iframe.
+- **Header height** is measured into the `--header-h` custom property, so anchor jumps and
+  `scroll-padding-top` always clear the sticky header exactly.
+- **Mobile menu:** a right-hand sheet at `z-index: 120` with its own brand row and close (×)
+  button, `100dvh` height, contained scrolling, dimmed tap-to-close overlay, Esc support and
+  a focus trap. It is sized with `min(100%, 23rem)` so it can never push the layout sideways.
+- **Bottom call/quote bar:** fixed, safe-area padded, appears after the hero, hides over the
+  final CTA, and adds `body.has-bar` padding so it never covers the footer.
+- **No horizontal overflow:** grid/flex children are `min-width: 0`, long labels wrap,
+  images are `max-width: 100%`, and nothing exceeds the viewport at 360/390/430 px.
+- `preview/mobile-check.html` renders the homepage in side-by-side 360/390/430 px frames.
+
+## 10. Verified vs. not verified
 
 **Verified here:** HTML parses with no unclosed or stray tags, no duplicate IDs, all
 `aria-controls`/`aria-labelledby` targets exist, every local asset path (42 HTML references
 and 3 font references) resolves, no missing images, one `<h1>`, no heading-level jumps.
 
 **Not verified here:** the sandbox has no headless browser and blocks browser downloads, so
-I could not render the page or capture screenshots. Please open the preview and check
-360 / 390 / 430 / 768 / 1024 / 1280 / 1440 px before publishing.
+I could not capture pixel screenshots. Layout was reasoned through every media query and the
+mobile interactions were exercised in jsdom (hamburger open/close/×/overlay-tap, focus
+handling, sticky-bar show/hide + body padding). Please confirm visually at
+360 / 390 / 430 / 768 / 1024 / 1280 / 1440 px — `preview/mobile-check.html` makes the three
+smallest widths a one-click check.

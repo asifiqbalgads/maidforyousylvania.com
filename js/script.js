@@ -11,12 +11,21 @@
      Header: sticky shadow
   --------------------------------------------------------------------- */
   var header = document.getElementById("siteHeader");
+  var setHeaderHeight = function () {
+    var h = header ? header.getBoundingClientRect().height : 0;
+    // only override the CSS fallback with a real measurement
+    if (h > 0) document.documentElement.style.setProperty("--header-h", h + "px");
+  };
   if (header) {
     var onScrollHeader = function () {
       header.classList.toggle("is-stuck", window.scrollY > 8);
     };
     onScrollHeader();
+    setHeaderHeight();
     window.addEventListener("scroll", onScrollHeader, { passive: true });
+    window.addEventListener("resize", setHeaderHeight);
+    window.addEventListener("orientationchange", setHeaderHeight);
+    if (window.ResizeObserver) new ResizeObserver(setHeaderHeight).observe(header);
   }
 
   /* ---------------------------------------------------------------------
@@ -70,6 +79,7 @@
 
   if (menuBtn && mobileNav) {
     menuBtn.setAttribute("aria-controls", "mobileNav");
+    var navClose = mobileNav.querySelector(".mobile-nav__close");
 
     var openNav = function () {
       lastFocused = document.activeElement;
@@ -105,7 +115,27 @@
     });
 
     mobileNav.addEventListener("click", function (event) {
-      if (event.target.closest("a")) closeNav(false);
+      if (event.target.closest(".mobile-nav__close") || event.target.closest("a")) {
+        // an in-page link should not steal focus back to the hamburger
+        if (event.target.closest("a")) closeNav(false);
+        else closeNav(true);
+      }
+    });
+
+    if (navClose) {
+      navClose.addEventListener("click", function (event) {
+        event.preventDefault();
+        closeNav(true);
+      });
+    }
+
+    // tapping the dimmed area behind the sheet closes it
+    document.addEventListener("click", function (event) {
+      if (document.body.classList.contains("nav-open") &&
+          !mobileNav.contains(event.target) &&
+          !menuBtn.contains(event.target)) {
+        closeNav(false);
+      }
     });
 
     document.addEventListener("keydown", function (event) {
@@ -263,18 +293,21 @@
   if (bar) {
     var hero = document.querySelector(".hero");
     var toggleBar = function () {
-      var threshold = hero ? hero.offsetHeight * 0.75 : 420;
+      var threshold = hero ? Math.max(hero.offsetHeight * 0.6, 360) : 360;
       var pastFinal = false;
       var finalSection = document.querySelector(".final");
       if (finalSection) {
         var rect = finalSection.getBoundingClientRect();
-        pastFinal = rect.top < window.innerHeight * 0.85;
+        pastFinal = rect.top < window.innerHeight * 0.9;
       }
-      bar.classList.toggle("is-visible", window.scrollY > threshold && !pastFinal);
+      var show = window.scrollY > threshold && !pastFinal;
+      bar.classList.toggle("is-visible", show);
+      document.body.classList.toggle("has-bar", show);
     };
     toggleBar();
     window.addEventListener("scroll", toggleBar, { passive: true });
     window.addEventListener("resize", toggleBar);
+    window.addEventListener("orientationchange", toggleBar);
   }
 
   /* ---------------------------------------------------------------------
@@ -296,6 +329,7 @@
 
     event.preventDefault();
     var headerH = header ? header.offsetHeight : 0;
+    if (document.body.classList.contains("nav-open")) return;
     var top = target.getBoundingClientRect().top + window.pageYOffset - headerH - 8;
     window.scrollTo({ top: top, behavior: reduceMotion ? "auto" : "smooth" });
 

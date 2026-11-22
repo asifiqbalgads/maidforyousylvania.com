@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview — Maid For You homepage at mobile widths</title>
+<style>
+  html, body { margin: 0; background: #e9e4d8; font-family: system-ui, sans-serif; }
+  .bar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: .4rem; padding: .6rem .8rem;
+         background: #14313D; color: #FBF8F1; font-size: .8rem; align-items: center; }
+  .bar strong { margin-right: .4rem; }
+  .bar button { font: inherit; padding: .35rem .7rem; border: 1px solid rgba(251,248,241,.35);
+                background: transparent; color: inherit; border-radius: 3px; cursor: pointer; }
+  .bar button.on { background: #9CB27C; border-color: #9CB27C; color: #14313D; font-weight: 600; }
+  .bar span { opacity: .7; margin-left: auto; }
+  .stage { display: flex; gap: 1.2rem; padding: 1.2rem; overflow-x: auto; align-items: flex-start; }
+  .device { flex: none; background: #fff; border-radius: 18px; box-shadow: 0 18px 40px -22px rgba(20,49,61,.55);
+            padding: 10px; transition: width .25s ease; }
+  .device header { font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: #4a616b;
+                   display: flex; justify-content: space-between; padding: 0 .2rem .5rem; }
+  .device iframe { display: block; border: 1px solid rgba(20,49,61,.12); border-radius: 10px; background: #FBF8F1; }
+</style>
+</head>
+<body>
+<div class="bar">
+  <strong>Mobile check:</strong>
+  <button data-w="360" class="on">360</button>
+  <button data-w="390">390</button>
+  <button data-w="430">430</button>
+  <button data-w="768">768</button>
+  <span>Header sticks · no gap on the right · hamburger + bottom bar work</span>
+</div>
+<div class="stage" id="stage"></div>
+<script>
+  var widths = [360, 390, 430];
+  var stage = document.getElementById('stage');
+  widths.forEach(function (w) {
+    var d = document.createElement('div');
+    d.className = 'device';
+    d.dataset.w = w;
+    d.style.width = (w + 22) + 'px';
+    d.innerHTML = '<header><span>iPhone width</span><span>' + w + 'px</span></header>' +
+      '<iframe src="../index.html?dev=' + w + '" width="' + w + '" height="760" loading="lazy" title="' + w + 'px preview"></iframe>';
+    stage.appendChild(d);
+  });
+  document.querySelectorAll('.bar button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var w = b.dataset.w;
+      if (w === '768') { window.open('../index.html', '_blank'); return; }
+      document.querySelectorAll('.device').forEach(function (d) {
+        var dw = Number(d.dataset.w);
+        d.style.width = w === 'all' ? (dw + 22) + 'px' : (Number(w) + 22) + 'px';
+        var f = d.querySelector('iframe');
+        f.width = w; f.src = '../index.html?dev=' + w;
+      });
+      document.querySelectorAll('.bar button').forEach(function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+    });
+  });
+</script>
+</body>
+</html>
